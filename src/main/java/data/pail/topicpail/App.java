@@ -169,7 +169,7 @@ public class App extends Configured implements Tool
     @Override
     public int run( String[] args ) throws Exception {
         
-        Configuration hadConf = getConf();
+        Configuration hadConf = this.getConf();
         Map apiConf = new HashMap();
         String sers = "backtype.hadoop.ThriftSerialization," +
         "org.apache.hadoop.io.serializer.WritableSerialization";
@@ -189,8 +189,8 @@ public class App extends Configured implements Tool
         Api.execute(
             new StdoutTap(),
             new Subquery("?topic")
-              .predicate(Api.hfsTextline(args[1]), "_")
-              .predicate(new CreateTopic(), "?topic"));
+              .predicate(Api.hfsTextline(args[1]), "?input")
+              .predicate(new CreateTopic(), "?input").out( "?topic" ) );
         
         
         return 0;
