@@ -122,8 +122,7 @@ public class App extends Configured implements Tool
             String json = call.getArguments().getString(0);
             Gson gson = new Gson();
             
-            ArrayList< TopicJSON > topicJSON = gson.fromJson( json , 
-                    new TypeToken<ArrayList<TopicJSON>>(){}.getType());
+            TopicJSON topicJSON = gson.fromJson( json , TopicJSON.class );
             DateFormat df = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss'Z'" );
             Date firstDate = null;//,lastDate;
             try { 
@@ -137,30 +136,28 @@ public class App extends Configured implements Tool
 
             Map<Integer,Double> tmptimeSeries;
             Topic topic;
-            for(int i=0; i<topicJSON.size(); i++){
-                try {
-                    topic = new Topic();
-                    topic.setName( topicJSON.get(i).getName() );
-                    topic.setIsTrend( topicJSON.get(i).getIsTrend() );
-                    topic.setTrendDate( topicJSON.get(i).getTimeTrended());
-                    tmptimeSeries = new HashMap<>();
-                    for(int j=0; j<topicJSON.get(i).getTimeStamps().size(); j++){
-                        poss =(int) ((( topicJSON.get(i).getTimeStamps().get(j)
-                                       - firstDate.getTime() ) / ( 60 * 1000 )) / 2);
-                        if( tmptimeSeries.containsKey(poss) ){
-                            tmptimeSeries.put(poss, tmptimeSeries.get(poss) + 1.0);
-                        }
-                        else{
-                            tmptimeSeries.put(poss, 1.0);
-                        }
+            try {
+                topic = new Topic();
+                topic.setName( topicJSON.getName() );
+                topic.setIsTrend( topicJSON.getIsTrend() );
+                topic.setTrendDate( topicJSON.getTimeTrended());
+                tmptimeSeries = new HashMap<>();
+                for(int j=0; j<topicJSON.getTimeStamps().size(); j++){
+                    poss =(int) ((( topicJSON.getTimeStamps().get(j)
+                                   - firstDate.getTime() ) / ( 60 * 1000 )) / 2);
+                    if( tmptimeSeries.containsKey(poss) ){
+                        tmptimeSeries.put(poss, tmptimeSeries.get(poss) + 1.0);
                     }
-                    topic.setTimeSeries(tmptimeSeries);
+                    else{
+                        tmptimeSeries.put(poss, 1.0);
+                    }
+                }
+                topic.setTimeSeries(tmptimeSeries);
 //                    thriftTopic.add(topic);
-                    call.getOutputCollector().add( new Tuple( topic ) );
-                }
-                catch(OutOfMemoryError e){
-                    e.printStackTrace(System.err);
-                }
+                call.getOutputCollector().add( new Tuple( topic ) );
+            }
+            catch(OutOfMemoryError e){
+                e.printStackTrace(System.err);
             }
         }
         
