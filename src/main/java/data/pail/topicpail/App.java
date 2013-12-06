@@ -8,12 +8,8 @@ import com.backtype.hadoop.pail.Pail;
 import com.backtype.hadoop.pail.PailSpec;
 import com.backtype.hadoop.pail.SequenceFileFormat;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.twitter.maple.tap.StdoutTap;
 import data.thrift.topicthrift.Topic;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -24,13 +20,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jcascalog.Api;
 import jcascalog.Subquery;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
@@ -41,6 +34,10 @@ import org.apache.hadoop.util.ToolRunner;
  */
 public class App extends Configured implements Tool
 {
+    private static Map<String, Object> options;
+    private static Pail compressed;
+    private static Pail.TypedRecordOutputStream os;
+    private static String firstDateStr;
     
     public static class TopicJSON{
         private String name;
@@ -89,31 +86,12 @@ public class App extends Configured implements Tool
             this.tweetID = tweetID; 
         }
     }
+    
+    private static class CreateJSON {
 
-    private static Map<String, Object> options;
-    private static Pail compressed;
-    private static Pail.TypedRecordOutputStream os;
-    private static String firstDateStr;
-    
-    public static void createCompressedPail() throws IOException {
-        options = new HashMap<>();
-        options.put(SequenceFileFormat.CODEC_ARG, 
-                SequenceFileFormat.CODEC_ARG_BZIP2);
-        options.put(SequenceFileFormat.TYPE_ARG,
-                SequenceFileFormat.TYPE_ARG_BLOCK);
-        SplitTopicPailStructure struct = new SplitTopicPailStructure();
-        compressed = Pail.create("/user/user/tmp/compressed",
-                new PailSpec("SequenceFile", options, struct));
-        os = compressed.openWrite();
+        public CreateJSON() {
+        }
     }
-    
-//    public static void setApplicationConf() {
-//        Map conf = new HashMap();
-//        String sers = /*"backtype.hadoop.ThriftSerialization," +*/
-//        "org.apache.hadoop.io.serializer.WritableSerialization";
-//        conf.put("io.serializations", sers);
-//        Api.setApplicationConf(conf);
-//    }
 
     public static class CreateTopic extends CascalogFunction {
 
@@ -124,19 +102,16 @@ public class App extends Configured implements Tool
             
             TopicJSON topicJSON = gson.fromJson( json , TopicJSON.class );
             DateFormat df = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss'Z'" );
-            Date firstDate = null;//,lastDate;
+            Date firstDate;//,lastDate;
+            
             try { 
-                firstDate = df.parse( firstDateStr );
-            } catch (ParseException ex) {
-                Logger.getLogger(App.class.getName())
-                        .log(Level.SEVERE, null, ex);
-            }
-//            lastDate = df.parse( args[1] ); 
-            int poss;
+                firstDate = df.parse( firstDateStr );     
+            
+                int poss;
 
-            Map<Integer,Double> tmptimeSeries;
-            Topic topic;
-            try {
+                Map<Integer,Double> tmptimeSeries;
+                Topic topic;
+
                 topic = new Topic();
                 topic.setName( topicJSON.getName() );
                 topic.setIsTrend( topicJSON.getIsTrend() );
@@ -153,14 +128,25 @@ public class App extends Configured implements Tool
                     }
                 }
                 topic.setTimeSeries(tmptimeSeries);
-//                    thriftTopic.add(topic);
                 call.getOutputCollector().add( new Tuple( topic ) );
             }
-            catch(OutOfMemoryError e){
+            catch(OutOfMemoryError | ParseException e ){
                 e.printStackTrace(System.err);
             }
         }
         
+    }
+    
+    public static void createCompressedPail() throws IOException {
+        options = new HashMap<>();
+        options.put(SequenceFileFormat.CODEC_ARG, 
+                SequenceFileFormat.CODEC_ARG_BZIP2);
+        options.put(SequenceFileFormat.TYPE_ARG,
+                SequenceFileFormat.TYPE_ARG_BLOCK);
+        SplitTopicPailStructure struct = new SplitTopicPailStructure();
+        compressed = Pail.create("/user/user/tmp/compressed",
+                new PailSpec("SequenceFile", options, struct));
+        os = compressed.openWrite();
     }
     
     @Override
@@ -180,14 +166,16 @@ public class App extends Configured implements Tool
         
         Api.setApplicationConf(apiConf);
         firstDateStr = args[0];
-//        setApplicationConf();
-//        Topic topic = new Topic();
+        
+        Subquery createJSON = new Subquery( "?JSONTopic" )
+                .predicate( Api.hfsTextline( args[1] ), "?tweets" )
+                .predicate( new CreateJSON(), "?tweets" ).out( "?JSONTopic" );
 
         Api.execute(
             new StdoutTap(),
-            new Subquery("?topic")
-              .predicate(Api.hfsTextline(args[1]), "?input")
-              .predicate(new CreateTopic(), "?input").out( "?topic" ) );
+            new Subquery( "?topic" )
+              .predicate( createJSON, "?JSON" )
+              .predicate( new CreateTopic(), "?JSON" ).out( "?topic" ) );
         
         
         return 0;
