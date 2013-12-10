@@ -2,7 +2,8 @@ package data.pail.topicpail;
 
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.tap.hadoop.Hfs;
-import data.jcascalog.CreateTopics;
+import data.jcascalog.classes.CreateTopics;
+import data.thrift.topicthrift.Topic;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class App extends Configured implements Tool {
         Map apiConf = new HashMap();
         String sers = "backtype.hadoop.ThriftSerialization," +
         "org.apache.hadoop.io.serializer.WritableSerialization";
-        apiConf.put("io.serializations", sers);
+        apiConf.put("io.serializations", sers);        
         
         Iterator<Map.Entry<String, String>> iter = hadConf.iterator();
         while (iter.hasNext()) {
@@ -55,9 +56,9 @@ public class App extends Configured implements Tool {
     public static void main( String[] args ) 
     {
         Configuration conf = new Configuration();
-        conf.set( "mapred.cache.files", args[0] );
-        conf.set( "mapred.cache.files", args[1] );
-        conf.set( "mapred.cache.files", args[2] );
+        conf.set( "mapred.cache.files", args[0] ); // stopwords
+        conf.set( "mapred.cache.files", args[1] ); // trends -> pos. 1-3
+        conf.set( "mapred.cache.files", args[2] ); // trends -> pos. 4-10
         conf.set( "mapred.child.java.opts", "-Xmx2g" );
         try {
             ToolRunner.run(conf, new App(), args);

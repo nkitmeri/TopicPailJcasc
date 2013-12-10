@@ -1,4 +1,4 @@
-package data.jcascalog;
+package data.jcascalog.classes;
 
 import cascading.flow.FlowProcess;
 import cascading.flow.hadoop.HadoopFlowProcess;
