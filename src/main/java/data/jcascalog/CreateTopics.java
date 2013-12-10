@@ -12,8 +12,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.hadoop.conf.Configuration;
@@ -33,6 +37,8 @@ import twitter4j.json.DataObjectFactory;
 public class CreateTopics extends CascalogFunction {
         
         private List< String > stopList;
+        private List< String > trendsNotFulfilRequirements;
+        private Map< String, Long > trendsList;
 
         private String clean( Status tweet ){
            //remove emoticons
@@ -71,28 +77,52 @@ public class CreateTopics extends CascalogFunction {
             Path f = null;
             
             try {
-              HadoopFlowProcess hfp = (HadoopFlowProcess) process;
-              Path[] files = DistributedCache
-                      .getLocalCacheFiles( hfp.getJobConf() );
-              f = files[0];
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
-
-            try 
-            {
+                HadoopFlowProcess hfp = (HadoopFlowProcess) process;
+                Path[] files = DistributedCache
+                        .getLocalCacheFiles( hfp.getJobConf() );
                 FileSystem fs = FileSystem.getLocal(new Configuration());
-                InputStream in = fs.open(f);
-                InputStreamReader inr = new InputStreamReader(in);
+                InputStream in;
+                InputStreamReader inr;
+                
+
+                //read StopWords List
+                f = files[0];
+                in = fs.open(f);
+                inr = new InputStreamReader(in);
                 try (BufferedReader r = new BufferedReader(inr))
                 {
                     String line;
-                    
+
                     while ((line = r.readLine()) != null)
                         stopList.add(line);
                 }
+                 //read Trends Map
+                f = files[1];
+                in = fs.open(f);
+                inr = new InputStreamReader(in);
+                DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                try (BufferedReader r = new BufferedReader(inr))
+                {
+                    String line;
+
+                    while ((line = r.readLine()) != null)
+                        trendsList.put(line.split(",")[0],df.
+                                parse( line.split(",")[1] ).getTime());
+                }
+                
+                //read Trends Not Fulfil Requirements List
+                f = files[2];
+                in = fs.open(f);
+                inr = new InputStreamReader(in);
+                try (BufferedReader r = new BufferedReader(inr))
+                {
+                    String line;
+
+                    while ((line = r.readLine()) != null)
+                        trendsNotFulfilRequirements.add(line);
+                } 
             }
-            catch( IOException e ) 
+            catch( IOException | ParseException e ) 
             {
                 throw new RuntimeException(e);
             }
@@ -131,8 +161,18 @@ public class CreateTopics extends CascalogFunction {
                             {
                                 continue;
                             }
-                            
-                            call.getOutputCollector().add( new Tuple( token ) );
+                            if ( trendsList.containsKey(token) )
+                            {
+                                call.getOutputCollector().add( new Tuple( token,
+                                        true, trendsList.get(token) ) );
+                                continue;
+                            }
+                            if ( !trendsNotFulfilRequirements.contains(token) )
+                            {
+                                call.getOutputCollector().add( new Tuple( token,
+                                        false, null ) );
+                                continue;
+                            }
                         }
                     }
                 }
