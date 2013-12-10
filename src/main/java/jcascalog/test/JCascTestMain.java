@@ -21,7 +21,6 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.core.StopFilter;
 import org.apache.lucene.analysis.shingle.ShingleFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -36,8 +35,25 @@ import twitter4j.json.DataObjectFactory;
  */
 public class JCascTestMain extends Configured implements Tool {
 
-    private static class CretateTokens extends CascalogFunction {
+    private static class StopWordsRM extends CascalogFunction {
 
+        @Override
+        public void operate( FlowProcess proccess, FunctionCall call )
+        {
+            String stopwords = call.getArguments().getString(0);
+            String token = call.getArguments().getString(1);
+            
+            if( !token.contains( stopwords ) )
+            {
+                call.getOutputCollector().add( new Tuple( token ) );
+            }
+        }
+    }
+    
+    private static class CretateTokens extends CascalogFunction {
+        
+        
+        
         private String clean( Status tweet ){
            //remove emoticons
             String tmpString = tweet.getText().
@@ -128,9 +144,16 @@ public class JCascTestMain extends Configured implements Tool {
         
         Api.setApplicationConf(apiConf);
         
-        Subquery tokens = new Subquery( "?token" )
+        Subquery stopWords = new Subquery( "?stopwords" )
+                .predicate( Api.hfsTextline( "/tmp/enTwitter.txt" ),
+                        "?stopwords" );
+        
+        Subquery tokens = new Subquery( "?cleanTokens" )
                 .predicate( Api.hfsTextline( "/tmp/test1000.txt" ), "?tweets" )
-                .predicate( new CretateTokens(), "?tweets" ).out( "?token" );
+                .predicate( new CretateTokens(), "?tweets" ).out( "?token" )
+                .predicate( stopWords, "?stopwords" )
+                .predicate( new StopWordsRM(), "?stopwords", "?token" )
+                .out( "?cleanTokens" );
         
         Api.execute( new StdoutTap(), tokens );
         
