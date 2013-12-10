@@ -24,12 +24,11 @@ public class Queries
     {
         switch( subquery )
         {
-            case "?cleanTokens, ?isTrend":
-                return new Subquery( subquery.split( ", ")[0],
-                        subquery.split( ", ")[1] )
+            case "?cleanTokens, ?isTrend, !timeTrended":
+                return new Subquery( subquery.split( ", ") )
                 .predicate( Api.hfsTextline( args ), "?tweets" )
                 .predicate( new CreateTopics(), "?tweets" )
-                .out( "?cleanTokens" );
+                .out( "?cleanTokens", "?isTrend", "!timeTrended" );
                 
             default:
                 System.err.println( "Not valid subquery" );

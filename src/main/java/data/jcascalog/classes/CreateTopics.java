@@ -16,6 +16,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -74,6 +75,9 @@ public class CreateTopics extends CascalogFunction {
         {
             super.prepare( process, call );
             stopList = new ArrayList<>();
+            trendsList = new HashMap<>();
+            trendsNotFulfilRequirements = new ArrayList<>();
+            
             Path f = null;
             
             try {
@@ -100,7 +104,8 @@ public class CreateTopics extends CascalogFunction {
                 f = files[1];
                 in = fs.open(f);
                 inr = new InputStreamReader(in);
-                DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                DateFormat df =
+                        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
                 try (BufferedReader r = new BufferedReader(inr))
                 {
                     String line;
