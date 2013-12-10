@@ -12,7 +12,7 @@ import jcascalog.Subquery;
 public class Queries 
 {
     private final String args;
-    private String subquery;
+    private final String subquery;
     
     public Queries( String args, String subquery )
     {
