@@ -3,6 +3,7 @@ package data.jcascalog.queries;
 
 import data.jcascalog.classes.CreateTopics;
 import jcascalog.Api;
+import jcascalog.Option;
 import jcascalog.Subquery;
 
 /**
@@ -28,7 +29,8 @@ public class Queries
                 return new Subquery( subquery.split( ", ") )
                 .predicate( Api.hfsTextline( args ), "?tweets" )
                 .predicate( new CreateTopics(), "?tweets" )
-                .out( "?cleanTokens", "?isTrend", "!timeTrended" );
+                .out( "?cleanTokens", "?isTrend", "!timeTrended" )
+                        .predicate( Option.DISTINCT, true );
                 
             default:
                 System.err.println( "Not valid subquery" );

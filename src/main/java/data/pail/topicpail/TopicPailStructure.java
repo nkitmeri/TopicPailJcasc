@@ -1,5 +1,6 @@
 package data.pail.topicpail;
 
+import data.pail.app.ThriftPailStructure;
 import data.thrift.topicthrift.Topic;
 import java.util.Collections;
 import java.util.List;

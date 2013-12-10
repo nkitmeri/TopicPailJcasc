@@ -6,7 +6,6 @@ import cascading.tap.local.StdOutTap;
 import cascading.tuple.Tuple;
 import cascalog.CascalogFunction;
 import com.twitter.maple.tap.StdoutTap;
-import data.pail.topicpail.App;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
