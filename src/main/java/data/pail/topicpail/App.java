@@ -41,7 +41,7 @@ public class App extends Configured implements Tool {
         Api.setApplicationConf(apiConf);
         
         Api.execute( new Hfs(  new TextDelimited(), args[2] ), 
-                new Queries( args[0], "?cleanTokens, ?isTrend" ).getQuery() );
+                new Queries( args[0], "?cleanTokens, ?isTrend, !timeTrended"  ).getQuery() );
         
         return 0;
     }
