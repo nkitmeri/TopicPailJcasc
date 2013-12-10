@@ -3,6 +3,7 @@ package data.pail.topicpail;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.tap.hadoop.Hfs;
 import data.jcascalog.classes.CreateTopics;
+import data.jcascalog.queries.Queries;
 import data.thrift.topicthrift.Topic;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,12 +40,8 @@ public class App extends Configured implements Tool {
         
         Api.setApplicationConf(apiConf);
         
-        Subquery tokens = new Subquery( "?cleanTokens" )
-                .predicate( Api.hfsTextline( args[1] ), "?tweets" )
-                .predicate( new CreateTopics(), "?tweets" )
-                .out( "?cleanTokens" );
-        
-        Api.execute( new Hfs(  new TextDelimited(), args[2] ), tokens );
+        Api.execute( new Hfs(  new TextDelimited(), args[2] ), 
+                new Queries( args[0], "?cleanTokens, ?isTrend" ).getQuery() );
         
         return 0;
     }
