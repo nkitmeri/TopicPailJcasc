@@ -6,7 +6,6 @@ import cascading.operation.FunctionCall;
 import cascading.operation.OperationCall;
 import cascading.tuple.Tuple;
 import cascalog.CascalogFunction;
-import data.pail.topicpail.App;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -184,8 +183,7 @@ public class CreateTopics extends CascalogFunction {
             } 
             catch( TwitterException | IOException e ) 
             {
-                Logger.getLogger(App.class.getName())
-                        .log(Level.SEVERE, null, e);
+                throw new RuntimeException(e);
             }            
          }
     }

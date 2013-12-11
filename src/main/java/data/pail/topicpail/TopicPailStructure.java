@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class TopicPailStructure extends ThriftPailStructure<Topic>
 {
+    @Override
     public Class getType()
     {
         return Topic.class;
@@ -22,11 +23,13 @@ public class TopicPailStructure extends ThriftPailStructure<Topic>
         return new Topic();
     }
     
+    @Override
     public List< String > getTarget( Topic object )
     {
         return Collections.EMPTY_LIST;
     }
     
+    @Override
     public boolean isValidTarget( String... dirs )
     {
         return true;

@@ -9,6 +9,7 @@ import org.apache.thrift.TSerializer;
 /**
  *
  * @author nikos
+ * @param <T>
  */
 public abstract class ThriftPailStructure<T extends Comparable> implements
 		PailStructure<T> {
