@@ -1,9 +1,14 @@
 
 package data.jcascalog.queries;
 
+import com.backtype.cascading.tap.PailTap;
+import com.backtype.cascading.tap.PailTap.PailTapOptions;
+import com.backtype.hadoop.pail.PailSpec;
+import com.backtype.hadoop.pail.PailStructure;
+import data.jcascalog.classes.CreateBuckets;
 import data.jcascalog.classes.CreateTopics;
+import data.pail.tweetpail.SplitTweetPailStructure;
 import jcascalog.Api;
-import jcascalog.Option;
 import jcascalog.Subquery;
 
 /**
@@ -25,12 +30,14 @@ public class Queries
     {
         switch( subquery )
         {
-            case "?cleanTokens, ?isTrend, !timeTrended":
+            case "?cleanTokens, ?isTrend, !timeTrended, ?timeBuckets":
                 return new Subquery( subquery.split( ", ") )
-                .predicate( Api.hfsTextline( args ), "?tweets" )
+                .predicate( splitTweetTap( args ), "_", "?tweets" )
                 .predicate( new CreateTopics(), "?tweets" )
-                .out( "?cleanTokens", "?isTrend", "!timeTrended" )
-                        .predicate( Option.DISTINCT, true );
+                .out( "?cleanTokens", "?isTrend", "!timeTrended"
+                        , "?tweetTime" )
+                .predicate( new CreateBuckets(), "?tweetTime" )
+                        .out( "?timeBuckets" );
                 
             default:
                 System.err.println( "Not valid subquery" );
@@ -38,5 +45,11 @@ public class Queries
         }
         
         throw new RuntimeException();
+    }
+    
+    public static PailTap splitTweetTap(String path) {
+        PailTapOptions opts = new PailTapOptions();
+        opts.spec = new PailSpec((PailStructure) new SplitTweetPailStructure());
+        return new PailTap(path, opts);
     }
 }

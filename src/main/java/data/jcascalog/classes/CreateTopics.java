@@ -6,6 +6,8 @@ import cascading.operation.FunctionCall;
 import cascading.operation.OperationCall;
 import cascading.tuple.Tuple;
 import cascalog.CascalogFunction;
+import data.thrift.tweetthrift.Tweet;
+import data.thrift.tweetthrift.TweetType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,8 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
@@ -40,9 +40,9 @@ public class CreateTopics extends CascalogFunction {
         private List< String > trendsNotFulfilRequirements;
         private Map< String, Long > trendsList;
 
-        private String clean( Status tweet ){
+        private String clean( Tweet tweet ){
            //remove emoticons
-            String tmpString = tweet.getText().
+            String tmpString = tweet.getText().orignalText.
                     replaceAll("\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~"
                             + "_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", "").
                     replaceAll("[^A-Za-z@#0-9-\\s+]", "");
@@ -58,7 +58,7 @@ public class CreateTopics extends CascalogFunction {
 
             }
             //remove retweets RT
-            if( tweet.isRetweet() ){
+            if( tweet.getType().equals( TweetType.RETWEET ) ){
                 tweetWords[0] = "";
             }
             tmpString = "";
@@ -77,7 +77,7 @@ public class CreateTopics extends CascalogFunction {
             trendsList = new HashMap<>();
             trendsNotFulfilRequirements = new ArrayList<>();
             
-            Path f = null;
+            Path f;
             
             try {
                 HadoopFlowProcess hfp = (HadoopFlowProcess) process;
@@ -137,51 +137,48 @@ public class CreateTopics extends CascalogFunction {
             
             try
             {
-                Status tweet = DataObjectFactory.createStatus(
-                        call.getArguments().getString(0) );
+                Tweet tweet = ( Tweet ) call.getArguments().getObject(0);
                 
-                if( tweet.getIsoLanguageCode().equals("en") ){
-                    String cleanTweet = clean( tweet );
-                    TokenStream tokenizer = new StandardTokenizer(
-                        Version.LUCENE_46, new StringReader( cleanTweet ) );
-                    StopFilter filter = new StopFilter( Version.LUCENE_46, 
-                            tokenizer, StopFilter.makeStopSet( 
-                                    Version.LUCENE_46, stopList, true ) );
-                    
-                    try ( ShingleFilter filter2 = 
-                            new ShingleFilter( filter, 2, 5 ) )
+                String cleanTweet = clean( tweet );
+                TokenStream tokenizer = new StandardTokenizer(
+                    Version.LUCENE_46, new StringReader( cleanTweet ) );
+                StopFilter filter = new StopFilter( Version.LUCENE_46, 
+                        tokenizer, StopFilter.makeStopSet( 
+                                Version.LUCENE_46, stopList, true ) );
+
+                try ( ShingleFilter filter2 = 
+                        new ShingleFilter( filter, 2, 5 ) )
+                {
+                    CharTermAttribute termAtt = filter2
+                            .addAttribute( CharTermAttribute.class );
+                    tokenizer.reset();
+
+                    String token;
+
+                    while( filter2.incrementToken() )
                     {
-                        CharTermAttribute termAtt = filter2
-                                .addAttribute( CharTermAttribute.class );
-                        tokenizer.reset();
-                        
-                        String token;
-                        
-                        while( filter2.incrementToken() )
+                        token = termAtt.toString();
+
+                        if ( token.contains("_") )
                         {
-                            token = termAtt.toString();
-                            
-                            if ( token.contains("_") )
-                            {
-                                continue;
-                            }
-                            if ( trendsList.containsKey(token) )
-                            {
-                                call.getOutputCollector().add( new Tuple( token,
-                                        true, trendsList.get(token) ) );
-                                continue;
-                            }
-                            if ( !trendsNotFulfilRequirements.contains(token) )
-                            {
-                                call.getOutputCollector().add( new Tuple( token,
-                                        false, null ) );
-                                continue;
-                            }
+                            continue;
+                        }
+                        if ( trendsList.containsKey(token) )
+                        {
+                            call.getOutputCollector().add( new Tuple( token,
+                                    true, trendsList.get(token),
+                                    tweet.date.getCratedAt().toString() ) );
+                        }
+                        else if ( !trendsNotFulfilRequirements.contains(token) )
+                        {
+                            Tuple tuple = new Tuple( token, false, null,
+                                    tweet.date.getCratedAt().toString() );
+                            call.getOutputCollector().add( tuple );
                         }
                     }
                 }
-            } 
-            catch( TwitterException | IOException e ) 
+            }             
+            catch( IOException e ) 
             {
                 throw new RuntimeException(e);
             }            

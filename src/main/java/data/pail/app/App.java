@@ -1,22 +1,15 @@
 package data.pail.app;
 
-import cascading.scheme.hadoop.TextDelimited;
-import cascading.tap.hadoop.Hfs;
 import com.twitter.maple.tap.StdoutTap;
-import data.jcascalog.classes.CreateTopics;
 import data.jcascalog.queries.Queries;
-import data.thrift.topicthrift.Topic;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jcascalog.Api;
-import jcascalog.Subquery;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
@@ -43,13 +36,14 @@ public class App extends Configured implements Tool {
         
         Api.setApplicationConf(apiConf);
         
-        Api.execute( new Hfs(  new TextDelimited(), args[4] ), 
-                new Queries( args[0], "?cleanTokens, ?isTrend, !timeTrended"  )
-                        .getQuery() );
-        
-//        Api.execute( new StdoutTap(), 
+//        Api.execute( new Hfs(  new TextDelimited(), args[4] ), 
 //                new Queries( args[0], "?cleanTokens, ?isTrend, !timeTrended"  )
 //                        .getQuery() );
+        
+        Api.execute( new StdoutTap(), 
+                new Queries( args[0], "?cleanTokens, ?isTrend,"
+                        + " !timeTrended, ?timeBuckets"  )
+                        .getQuery() );
         
         return 0;
     }
@@ -63,15 +57,16 @@ public class App extends Configured implements Tool {
         Configuration conf = new Configuration();
         String files = args[1] + "," + args[2] + "," + args[3];
         conf.set( "mapred.cache.files", files ); // stopwords
-        conf.set( "mapred.reduce.tasks", "40" );
+        conf.set( "mapred.reduce.tasks", "2" );
 //        conf.set( "mapred.cache.files", args[2] ); // trends -> pos. 1-3
 //        conf.set( "mapred.cache.files", args[3] ); // trends -> pos. 4-10
         conf.set( "mapred.child.java.opts", "-Xmx2g" );
         try {
             ToolRunner.run(conf, new App(), args);
-        } catch (Exception ex) {
-            Logger.getLogger(App.class.getName())
-                    .log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+//            Logger.getLogger(App.class.getName())
+//                    .log(Level.SEVERE, null, e);
+            throw new RuntimeException(e);
         }
     }
     
