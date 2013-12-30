@@ -26,7 +26,7 @@
                 <configuration>
                   <archive>
                     <manifest>
-                      <mainClass>data.pail.topicpail.App</mainClass>
+                      <mainClass>data.pail.app.App</mainClass>
                     </manifest>
                   </archive>
                   <descriptorRefs>

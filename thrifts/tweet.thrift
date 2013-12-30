@@ -82,4 +82,5 @@ struct Tweet
     9:  optional HashtagEntities hashtagEntities;
     10: optional NamedEntities namedEntities;
     11: optional Language language;
+    12: optional Location location;
 } 

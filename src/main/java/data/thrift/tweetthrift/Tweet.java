@@ -45,6 +45,7 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
   private static final org.apache.thrift.protocol.TField HASHTAG_ENTITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("hashtagEntities", org.apache.thrift.protocol.TType.LIST, (short)9);
   private static final org.apache.thrift.protocol.TField NAMED_ENTITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("namedEntities", org.apache.thrift.protocol.TType.LIST, (short)10);
   private static final org.apache.thrift.protocol.TField LANGUAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("language", org.apache.thrift.protocol.TType.STRUCT, (short)11);
+  private static final org.apache.thrift.protocol.TField LOCATION_FIELD_DESC = new org.apache.thrift.protocol.TField("location", org.apache.thrift.protocol.TType.STRUCT, (short)12);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -66,6 +67,7 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
   public List<HashtagEntity> hashtagEntities; // optional
   public List<NamedEntity> namedEntities; // optional
   public Language language; // optional
+  public Location location; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -82,7 +84,8 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
     MENTION_ENTITIES((short)8, "mentionEntities"),
     HASHTAG_ENTITIES((short)9, "hashtagEntities"),
     NAMED_ENTITIES((short)10, "namedEntities"),
-    LANGUAGE((short)11, "language");
+    LANGUAGE((short)11, "language"),
+    LOCATION((short)12, "location");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -117,6 +120,8 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
           return NAMED_ENTITIES;
         case 11: // LANGUAGE
           return LANGUAGE;
+        case 12: // LOCATION
+          return LOCATION;
         default:
           return null;
       }
@@ -159,7 +164,7 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
   // isset id assignments
   private static final int __ID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private _Fields optionals[] = {_Fields.TEXT,_Fields.URL_ENTITIES,_Fields.MENTION_ENTITIES,_Fields.HASHTAG_ENTITIES,_Fields.NAMED_ENTITIES,_Fields.LANGUAGE};
+  private _Fields optionals[] = {_Fields.TEXT,_Fields.URL_ENTITIES,_Fields.MENTION_ENTITIES,_Fields.HASHTAG_ENTITIES,_Fields.NAMED_ENTITIES,_Fields.LANGUAGE,_Fields.LOCATION};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -183,6 +188,8 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.LIST        , "NamedEntities")));
     tmpMap.put(_Fields.LANGUAGE, new org.apache.thrift.meta_data.FieldMetaData("language", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Language.class)));
+    tmpMap.put(_Fields.LOCATION, new org.apache.thrift.meta_data.FieldMetaData("location", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Location.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Tweet.class, metaDataMap);
   }
@@ -237,6 +244,9 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
     if (other.isSetLanguage()) {
       this.language = new Language(other.language);
     }
+    if (other.isSetLocation()) {
+      this.location = new Location(other.location);
+    }
   }
 
   public Tweet deepCopy() {
@@ -256,6 +266,7 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
     this.hashtagEntities = null;
     this.namedEntities = null;
     this.language = null;
+    this.location = null;
   }
 
   public long getId() {
@@ -565,6 +576,30 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
     }
   }
 
+  public Location getLocation() {
+    return this.location;
+  }
+
+  public Tweet setLocation(Location location) {
+    this.location = location;
+    return this;
+  }
+
+  public void unsetLocation() {
+    this.location = null;
+  }
+
+  /** Returns true if field location is set (has been assigned a value) and false otherwise */
+  public boolean isSetLocation() {
+    return this.location != null;
+  }
+
+  public void setLocationIsSet(boolean value) {
+    if (!value) {
+      this.location = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case ID:
@@ -647,6 +682,14 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
       }
       break;
 
+    case LOCATION:
+      if (value == null) {
+        unsetLocation();
+      } else {
+        setLocation((Location)value);
+      }
+      break;
+
     }
   }
 
@@ -682,6 +725,9 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
     case LANGUAGE:
       return getLanguage();
 
+    case LOCATION:
+      return getLocation();
+
     }
     throw new IllegalStateException();
   }
@@ -713,6 +759,8 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
       return isSetNamedEntities();
     case LANGUAGE:
       return isSetLanguage();
+    case LOCATION:
+      return isSetLocation();
     }
     throw new IllegalStateException();
   }
@@ -817,6 +865,15 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
       if (!(this_present_language && that_present_language))
         return false;
       if (!this.language.equals(that.language))
+        return false;
+    }
+
+    boolean this_present_location = true && this.isSetLocation();
+    boolean that_present_location = true && that.isSetLocation();
+    if (this_present_location || that_present_location) {
+      if (!(this_present_location && that_present_location))
+        return false;
+      if (!this.location.equals(that.location))
         return false;
     }
 
@@ -936,6 +993,16 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetLocation()).compareTo(other.isSetLocation());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetLocation()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.location, other.location);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1043,6 +1110,16 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
       }
       first = false;
     }
+    if (isSetLocation()) {
+      if (!first) sb.append(", ");
+      sb.append("location:");
+      if (this.location == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.location);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -1071,6 +1148,9 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
     }
     if (language != null) {
       language.validate();
+    }
+    if (location != null) {
+      location.validate();
     }
   }
 
@@ -1238,6 +1318,15 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 12: // LOCATION
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.location = new Location();
+              struct.location.read(iprot);
+              struct.setLocationIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1344,6 +1433,13 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
           oprot.writeFieldEnd();
         }
       }
+      if (struct.location != null) {
+        if (struct.isSetLocation()) {
+          oprot.writeFieldBegin(LOCATION_FIELD_DESC);
+          struct.location.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1384,7 +1480,10 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
       if (struct.isSetLanguage()) {
         optionals.set(5);
       }
-      oprot.writeBitSet(optionals, 6);
+      if (struct.isSetLocation()) {
+        optionals.set(6);
+      }
+      oprot.writeBitSet(optionals, 7);
       if (struct.isSetText()) {
         struct.text.write(oprot);
       }
@@ -1427,6 +1526,9 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
       if (struct.isSetLanguage()) {
         struct.language.write(oprot);
       }
+      if (struct.isSetLocation()) {
+        struct.location.write(oprot);
+      }
     }
 
     @Override
@@ -1442,7 +1544,7 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
       struct.date = new Date();
       struct.date.read(iprot);
       struct.setDateIsSet(true);
-      BitSet incoming = iprot.readBitSet(6);
+      BitSet incoming = iprot.readBitSet(7);
       if (incoming.get(0)) {
         struct.text = new Text();
         struct.text.read(iprot);
@@ -1508,6 +1610,11 @@ public class Tweet implements org.apache.thrift.TBase<Tweet, Tweet._Fields>, jav
         struct.language = new Language();
         struct.language.read(iprot);
         struct.setLanguageIsSet(true);
+      }
+      if (incoming.get(6)) {
+        struct.location = new Location();
+        struct.location.read(iprot);
+        struct.setLocationIsSet(true);
       }
     }
   }

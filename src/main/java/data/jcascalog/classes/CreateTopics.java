@@ -30,15 +30,14 @@ import org.apache.lucene.analysis.shingle.ShingleFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.util.Version;
-import twitter4j.Status;
-import twitter4j.TwitterException;
-import twitter4j.json.DataObjectFactory;
 
 public class CreateTopics extends CascalogFunction {
         
         private List< String > stopList;
         private List< String > trendsNotFulfilRequirements;
         private Map< String, Long > trendsList;
+        private String tweetDate = "";
+        private final Tuple tuple = Tuple.size(4);
 
         private String clean( Tweet tweet ){
            //remove emoticons
@@ -163,16 +162,25 @@ public class CreateTopics extends CascalogFunction {
                         {
                             continue;
                         }
+                        
+                        tweetDate = tweet.date.getCratedAt().toString();
+                        
                         if ( trendsList.containsKey(token) )
                         {
-                            call.getOutputCollector().add( new Tuple( token,
-                                    true, trendsList.get(token),
-                                    tweet.date.getCratedAt().toString() ) );
+                            tuple.set( 0, token );
+                            tuple.set( 1, true );
+                            tuple.set( 2, trendsList.get(token) );
+                            tuple.set( 3, tweetDate );
+                            
+                            call.getOutputCollector().add( tuple );    
                         }
                         else if ( !trendsNotFulfilRequirements.contains(token) )
                         {
-                            Tuple tuple = new Tuple( token, false, null,
-                                    tweet.date.getCratedAt().toString() );
+                            tuple.set( 0, token );
+                            tuple.set( 1, false );
+                            tuple.set( 2, null );
+                            tuple.set( 3, tweetDate );
+                            
                             call.getOutputCollector().add( tuple );
                         }
                     }

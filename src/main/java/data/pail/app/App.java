@@ -37,13 +37,18 @@ public class App extends Configured implements Tool {
         Api.setApplicationConf(apiConf);
         
 //        Api.execute( new Hfs(  new TextDelimited(), args[4] ), 
-//                new Queries( args[0], "?cleanTokens, ?isTrend, !timeTrended"  )
+//                new Queries( args[0], "?cleanTokens, ?isTrend, !timeTrended" )
 //                        .getQuery() );
         
         Api.execute( new StdoutTap(), 
                 new Queries( args[0], "?cleanTokens, ?isTrend,"
-                        + " !timeTrended, ?timeBuckets"  )
+                        + " !timeTrended, ?timeBuckets" )
                         .getQuery() );
+        
+//        Api.execute( new StdoutTap(), 
+//                new Queries( args[0], "?cleanTokens, ?isTrend,"
+//                        + " !timeTrended, ?tweetTime" )
+//                        .getQuery() );
         
         return 0;
     }
@@ -52,12 +57,13 @@ public class App extends Configured implements Tool {
      * @param args
      * 
      */
-    public static void main( String[] args ) 
+    public static void main( String[] args ) throws ClassNotFoundException 
     {
         Configuration conf = new Configuration();
+        conf.setClass( "App", App.class, Tool.class);
         String files = args[1] + "," + args[2] + "," + args[3];
         conf.set( "mapred.cache.files", files ); // stopwords
-        conf.set( "mapred.reduce.tasks", "2" );
+//        conf.set( "mapred.reduce.tasks", "28" );
 //        conf.set( "mapred.cache.files", args[2] ); // trends -> pos. 1-3
 //        conf.set( "mapred.cache.files", args[3] ); // trends -> pos. 4-10
         conf.set( "mapred.child.java.opts", "-Xmx2g" );
@@ -66,6 +72,7 @@ public class App extends Configured implements Tool {
         } catch (Exception e) {
 //            Logger.getLogger(App.class.getName())
 //                    .log(Level.SEVERE, null, e);
+            e.printStackTrace( System.out );
             throw new RuntimeException(e);
         }
     }

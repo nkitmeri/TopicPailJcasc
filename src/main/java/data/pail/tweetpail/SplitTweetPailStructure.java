@@ -9,10 +9,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import twitter4j.Status;
-import twitter4j.json.DataObjectFactory;
 
 /**
  *

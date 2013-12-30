@@ -7,7 +7,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Xmx2G -classpath %classpath ${packageClassName} "/home/nikos/temp/compressed" "/tmp/enTwitter.txt" "/tmp/filteredTrends.txt" "/tmp/trendsDidNotPassFilter.txt"</exec.args>
+                <exec.args>-Xmx2G -classpath %classpath ${packageClassName} "/home/nikos/temp/compressed" "/home/nikos/temp/lists/enTwitter.txt" "/home/nikos/temp/lists/filteredTrends.txt" "/home/nikos/temp/lists/trendsDidNotPassFilter.txt"</exec.args>
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
@@ -18,7 +18,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -Xmx2G -classpath %classpath ${packageClassName} "/home/nikos/temp/compressed" "/tmp/enTwitter.txt" "/tmp/filteredTrends.txt" "/tmp/trendsDidNotPassFilter.txt"</exec.args>
+                <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -Xmx2G -classpath %classpath ${packageClassName} "/home/nikos/temp/compressed" "/home/nikos/temp/lists/enTwitter.txt" "/home/nikos/temp/lists/filteredTrends.txt" "/home/nikos/temp/lists/trendsDidNotPassFilter.txt"</exec.args>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
             </properties>
@@ -30,7 +30,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Xmx2G -classpath %classpath ${packageClassName} "/home/nikos/temp/compressed" "/tmp/enTwitter.txt" "/tmp/filteredTrends.txt" "/tmp/trendsDidNotPassFilter.txt"</exec.args>
+                <exec.args>-Xmx2G -classpath %classpath ${packageClassName} "/home/nikos/temp/compressed" "/home/nikos/temp/lists/enTwitter.txt" "/home/nikos/temp/lists/filteredTrends.txt" "/home/nikos/temp/lists/trendsDidNotPassFilter.txt"</exec.args>
                 <exec.executable>${profiler.java}</exec.executable>
             </properties>
         </action>

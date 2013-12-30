@@ -7,13 +7,8 @@ import cascalog.CascalogAggregator;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -29,7 +24,7 @@ public class CreateBuckets extends CascalogAggregator
     {
         try 
         {
-            firstDate = DATEFORMAT.parse( "Sat Nov 09 11:40:23 EET 2013" )
+            firstDate = DATEFORMAT.parse( "Thu Nov 28 14:24:00 EET 2013" )
                     .getTime();
         } 
         catch( ParseException e )
@@ -55,8 +50,8 @@ public class CreateBuckets extends CascalogAggregator
     public void start( FlowProcess process, AggregatorCall call ) 
     {
         Map< Integer, Integer > buckets = new HashMap<>();
-        int poss = ( int ) ( getTime( call.getArgumentFields().get(0)
-                .toString() ) - firstDate );
+        String date = ( String ) call.getArguments().getObject(1);
+        int poss = ( int ) ( getTime( date ) - firstDate );
         buckets.put( poss, 1 );
         call.setContext( buckets );
     }
@@ -66,8 +61,8 @@ public class CreateBuckets extends CascalogAggregator
     {
         HashMap< Integer, Integer > buckets = (HashMap< Integer, Integer >)
                 call.getContext();
-        int poss = ( int ) ( getTime( call.getArgumentFields().get(0)
-                .toString() ) - firstDate );
+        String date = ( String ) call.getArguments().getObject(1);
+        int poss = ( int ) ( getTime( date ) - firstDate );
         
         if( buckets.containsKey( poss ) )
         {
