@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -27,7 +28,7 @@ public class CreateBucketsBuf extends CascalogBuffer {
     {
         try 
         {
-            firstDate = DATEFORMAT.parse( "Sat Nov 09 11:46:40 EET 2013" )
+            firstDate = DATEFORMAT.parse( "Mon Nov 11 14:24:07 EET 2013" )
                     .getTime();
         } 
         catch( ParseException e )
@@ -58,7 +59,10 @@ public class CreateBucketsBuf extends CascalogBuffer {
         {
             TupleEntry t = iter.next();
             date = t.getTuple().toString();
-            long poss = ( getTime( date ) - firstDate );
+            long tmp = getTime( date );
+            long poss = ( tmp - firstDate );
+            poss = TimeUnit.MILLISECONDS.toMinutes(poss);
+            poss = ( poss - ( poss % 3 ) ) / 3; 
             
             if( buckets.containsKey( poss ) )
             {

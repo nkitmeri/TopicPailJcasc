@@ -5,11 +5,9 @@ import com.backtype.cascading.tap.PailTap;
 import com.backtype.cascading.tap.PailTap.PailTapOptions;
 import com.backtype.hadoop.pail.PailSpec;
 import com.backtype.hadoop.pail.PailStructure;
-import data.jcascalog.classes.CreateBuckets;
 import data.jcascalog.classes.CreateBucketsBuf;
 import data.jcascalog.classes.CreateTopics;
 import data.pail.tweetpail.SplitTweetPailStructure;
-import jcascalog.Option;
 import jcascalog.Subquery;
 
 /**

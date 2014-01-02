@@ -1,12 +1,12 @@
 package data.pail.app;
 
+import cascading.scheme.hadoop.TextDelimited;
+import cascading.tap.hadoop.Hfs;
 import com.twitter.maple.tap.StdoutTap;
 import data.jcascalog.queries.Queries;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jcascalog.Api;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -40,7 +40,7 @@ public class App extends Configured implements Tool {
 //                new Queries( args[0], "?cleanTokens, ?isTrend, !timeTrended" )
 //                        .getQuery() );
         
-        Api.execute( new StdoutTap(), 
+        Api.execute( new Hfs(  new TextDelimited(), args[4] ),//new StdoutTap(), ;
                 new Queries( args[0], "?cleanTokens, ?isTrend,"
                         + " !timeTrended, ?timeBuckets" )
                         .getQuery() );
