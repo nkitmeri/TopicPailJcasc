@@ -45,7 +45,7 @@ public class App extends Configured implements Tool {
                         + " !timeTrended, ?timeBuckets" )
                         .getQuery() );
         
-//        Api.execute( new StdoutTap(), 
+//        Api.execute( new Hfs(  new TextDelimited(), args[4] ), 
 //                new Queries( args[0], "?cleanTokens, ?isTrend,"
 //                        + " !timeTrended, ?tweetTime" )
 //                        .getQuery() );
@@ -57,16 +57,19 @@ public class App extends Configured implements Tool {
      * @param args
      * 
      */
-    public static void main( String[] args ) throws ClassNotFoundException 
+    public static void main( String[] args ) 
     {
         Configuration conf = new Configuration();
         conf.setClass( "App", App.class, Tool.class);
         String files = args[1] + "," + args[2] + "," + args[3];
         conf.set( "mapred.cache.files", files ); // stopwords
-//        conf.set( "mapred.reduce.tasks", "28" );
-//        conf.set( "mapred.cache.files", args[2] ); // trends -> pos. 1-3
-//        conf.set( "mapred.cache.files", args[3] ); // trends -> pos. 4-10
-        conf.set( "mapred.child.java.opts", "-Xmx2g" );
+        conf.set( "mapred.reduce.tasks", "28" );
+        conf.set("mapred.compress.map.output", "true");
+        conf.set("mapred.output.compression.type", "BLOCK"); 
+        conf.set("mapred.map.output.compression.codec", 
+                "org.apache.hadoop.io.compress.GzipCodec");
+        conf.set( "mapred.child.java.opts", "-Xmx1g" );
+        
         try {
             ToolRunner.run(conf, new App(), args);
         } catch (Exception e) {

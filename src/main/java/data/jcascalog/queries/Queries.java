@@ -38,12 +38,12 @@ public class Queries
                 .predicate( new CreateBucketsBuf(), "?tweetTime" )
                         .out( "?timeBuckets" );
                
-//            case "?cleanTokens, ?isTrend, !timeTrended, ?tweetTime":
-//                return new Subquery( subquery.split( ", ") )
-//                .predicate( splitTweetTap( args ), "_", "?tweets" )
-//                .predicate( new CreateTopics(), "?tweets" )
-//                .out( "?cleanTokens", "?isTrend", "!timeTrended"
-//                        , "?tweetTime" );
+            case "?cleanTokens, ?isTrend, !timeTrended, ?tweetTime":
+                return new Subquery( subquery.split( ", ") )
+                .predicate( splitTweetTap( args ), "_", "?tweets" )
+                .predicate( new CreateTopics(), "?tweets" )
+                .out( "?cleanTokens", "?isTrend", "!timeTrended"
+                        , "?tweetTime" );
                 
             default:
                 System.err.println( "Not valid subquery" );

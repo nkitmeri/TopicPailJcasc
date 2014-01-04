@@ -1,3 +1,4 @@
+
 package data.jcascalog.classes;
 
 import cascading.flow.FlowProcess;
@@ -10,7 +11,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -20,9 +20,15 @@ public class CreateBucketsBuf extends CascalogBuffer {
 
     private static final DateFormat DATEFORMAT =
                     new SimpleDateFormat( "EEE MMM dd HH:mm:ss ZZZZZ yyyy" );
+    private static final long TO_MIN = 60 * 2 * 1000;
     private static long firstDate;
     private String date = "";
-    private HashMap< Long, Integer > buckets;
+    private static final HashMap< Long, Integer > buckets = new HashMap();
+    private static final Tuple tuple = new Tuple(1);
+    private static long tmp;
+    private static long poss;
+    private static Iterator<TupleEntry> iter;
+    private static TupleEntry t;
     
     static
     {
@@ -52,17 +58,16 @@ public class CreateBucketsBuf extends CascalogBuffer {
     
     @Override
     public void operate(FlowProcess proccess, BufferCall call) {
-        buckets = new HashMap<>();
-        Iterator<TupleEntry> iter = call.getArgumentsIterator();
-        
+//        buckets = new HashMap<>();
+        iter = call.getArgumentsIterator();
+//        TupleEntry t;
+                
         while(iter.hasNext()) 
         {
-            TupleEntry t = iter.next();
+            t = iter.next();
             date = t.getTuple().toString();
-            long tmp = getTime( date );
-            long poss = ( tmp - firstDate );
-            poss = TimeUnit.MILLISECONDS.toMinutes(poss);
-            poss = ( poss - ( poss % 3 ) ) / 3; 
+            tmp = getTime( date );
+            poss = ( tmp - firstDate ) / TO_MIN;
             
             if( buckets.containsKey( poss ) )
             {
@@ -74,7 +79,9 @@ public class CreateBucketsBuf extends CascalogBuffer {
             }
         }
         
-        call.getOutputCollector().add(new Tuple(buckets));
+        tuple.set( 0, buckets );
+        call.getOutputCollector().add( tuple );
+        buckets.clear();
     }
     
 }

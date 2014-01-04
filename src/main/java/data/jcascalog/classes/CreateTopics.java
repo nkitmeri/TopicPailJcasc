@@ -33,20 +33,36 @@ import org.apache.lucene.util.Version;
 
 public class CreateTopics extends CascalogFunction {
         
-        private List< String > stopList;
-        private List< String > trendsNotFulfilRequirements;
-        private Map< String, Long > trendsList;
-        private String tweetDate = "";
-        private final Tuple tuple = Tuple.size(4);
+        private static List< String > stopList;
+        private static List< String > trendsNotFulfilRequirements;
+        private static Map< String, Long > trendsList;
+        private static String tweetDate = "";
+        private static final Tuple tuple = Tuple.size(4);
+        private static String tmpString;
+        private static String [] tweetWords;
+        private static Path f;
+        private static HadoopFlowProcess hfp;
+        private static Path[] files;
+        private static FileSystem fs;
+        private static InputStream in;
+        private static InputStreamReader inr;
+        private static String line;
+        private static DateFormat df;
+        private static Tweet tweet;
+        private static String cleanTweet;
+        private static TokenStream tokenizer;
+        private static StopFilter filter;
+        private static CharTermAttribute termAtt;
+        private static String token;
 
         private String clean( Tweet tweet ){
            //remove emoticons
-            String tmpString = tweet.getText().orignalText.
+            tmpString = tweet.getText().orignalText.
                     replaceAll("\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~"
                             + "_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", "").
                     replaceAll("[^A-Za-z@#0-9-\\s+]", "");
             //tokenize tweet
-            String [] tweetWords = tmpString.split("\\s+");
+            tweetWords = tmpString.split("\\s+");
             for( int i=0; i< tweetWords.length; i++ ){
                  //remove mentions 
                  if ( tweetWords[i].length() >= 1 &&
@@ -76,16 +92,11 @@ public class CreateTopics extends CascalogFunction {
             trendsList = new HashMap<>();
             trendsNotFulfilRequirements = new ArrayList<>();
             
-            Path f;
-            
             try {
-                HadoopFlowProcess hfp = (HadoopFlowProcess) process;
-                Path[] files = DistributedCache
+                hfp = (HadoopFlowProcess) process;
+                files = DistributedCache
                         .getLocalCacheFiles( hfp.getJobConf() );
-                FileSystem fs = FileSystem.getLocal(new Configuration());
-                InputStream in;
-                InputStreamReader inr;
-                
+                fs = FileSystem.getLocal(new Configuration());    
 
                 //read StopWords List
                 f = files[0];
@@ -93,8 +104,6 @@ public class CreateTopics extends CascalogFunction {
                 inr = new InputStreamReader(in);
                 try (BufferedReader r = new BufferedReader(inr))
                 {
-                    String line;
-
                     while ((line = r.readLine()) != null)
                         stopList.add(line);
                 }
@@ -102,12 +111,10 @@ public class CreateTopics extends CascalogFunction {
                 f = files[1];
                 in = fs.open(f);
                 inr = new InputStreamReader(in);
-                DateFormat df =
-                        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                
                 try (BufferedReader r = new BufferedReader(inr))
                 {
-                    String line;
-
                     while ((line = r.readLine()) != null)
                         trendsList.put(line.split(",")[0],df.
                                 parse( line.split(",")[1] ).getTime());
@@ -119,8 +126,6 @@ public class CreateTopics extends CascalogFunction {
                 inr = new InputStreamReader(in);
                 try (BufferedReader r = new BufferedReader(inr))
                 {
-                    String line;
-
                     while ((line = r.readLine()) != null)
                         trendsNotFulfilRequirements.add(line);
                 } 
@@ -136,23 +141,20 @@ public class CreateTopics extends CascalogFunction {
             
             try
             {
-                Tweet tweet = ( Tweet ) call.getArguments().getObject(0);
+                tweet = ( Tweet ) call.getArguments().getObject(0);
                 
-                String cleanTweet = clean( tweet );
-                TokenStream tokenizer = new StandardTokenizer(
+                cleanTweet = clean( tweet );
+                tokenizer = new StandardTokenizer(
                     Version.LUCENE_46, new StringReader( cleanTweet ) );
-                StopFilter filter = new StopFilter( Version.LUCENE_46, 
+                filter = new StopFilter( Version.LUCENE_46, 
                         tokenizer, StopFilter.makeStopSet( 
                                 Version.LUCENE_46, stopList, true ) );
 
                 try ( ShingleFilter filter2 = 
                         new ShingleFilter( filter, 2, 5 ) )
                 {
-                    CharTermAttribute termAtt = filter2
-                            .addAttribute( CharTermAttribute.class );
-                    tokenizer.reset();
-
-                    String token;
+                    termAtt = filter2.addAttribute( CharTermAttribute.class );
+                    tokenizer.reset();            
 
                     while( filter2.incrementToken() )
                     {
