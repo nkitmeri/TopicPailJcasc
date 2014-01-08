@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
@@ -38,6 +39,9 @@ public class CreateTopics extends CascalogFunction {
         private static Map< String, Long > trendsList;
         private static String tweetDate = "";
         private static final Tuple tuple = Tuple.size(4);
+        private static final Random rand = new Random();
+        private static final int RAND_LIMIT = 100000;
+        private static final int RAND_PASS = 50000;
         private static String tmpString;
         private static String [] tweetWords;
         private static Path f;
@@ -60,7 +64,8 @@ public class CreateTopics extends CascalogFunction {
             tmpString = tweet.getText().orignalText.
                     replaceAll("\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~"
                             + "_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", "").
-                    replaceAll("[^A-Za-z@#0-9-\\s+]", "");
+                    replaceAll("[^\\p{L}\\p{N}\\s]+", "");
+                    //replaceAll("[^A-Za-z@#0-9-\\s+]", "");
             //tokenize tweet
             tweetWords = tmpString.split("\\s+");
             for( int i=0; i< tweetWords.length; i++ ){
@@ -116,8 +121,12 @@ public class CreateTopics extends CascalogFunction {
                 try (BufferedReader r = new BufferedReader(inr))
                 {
                     while ((line = r.readLine()) != null)
+                    {
+                        if( line.charAt(0) == '#' )
+                            line = line.substring(1);
                         trendsList.put(line.split(",")[0],df.
                                 parse( line.split(",")[1] ).getTime());
+                    }
                 }
                 
                 //read Trends Not Fulfil Requirements List
@@ -126,8 +135,11 @@ public class CreateTopics extends CascalogFunction {
                 inr = new InputStreamReader(in);
                 try (BufferedReader r = new BufferedReader(inr))
                 {
-                    while ((line = r.readLine()) != null)
+                    while ((line = r.readLine()) != null) { 
+                        if( line.charAt(0) == '#' )
+                            line = line.substring(1);
                         trendsNotFulfilRequirements.add(line);
+                    }
                 } 
             }
             catch( IOException | ParseException e ) 
@@ -142,14 +154,14 @@ public class CreateTopics extends CascalogFunction {
             try
             {
                 tweet = ( Tweet ) call.getArguments().getObject(0);
-                
+                tweetDate = tweet.date.getCratedAt().toString();
                 cleanTweet = clean( tweet );
                 tokenizer = new StandardTokenizer(
                     Version.LUCENE_46, new StringReader( cleanTweet ) );
                 filter = new StopFilter( Version.LUCENE_46, 
                         tokenizer, StopFilter.makeStopSet( 
                                 Version.LUCENE_46, stopList, true ) );
-
+                
                 try ( ShingleFilter filter2 = 
                         new ShingleFilter( filter, 2, 5 ) )
                 {
@@ -159,13 +171,11 @@ public class CreateTopics extends CascalogFunction {
                     while( filter2.incrementToken() )
                     {
                         token = termAtt.toString();
-
+                        
                         if ( token.contains("_") )
                         {
                             continue;
                         }
-                        
-                        tweetDate = tweet.date.getCratedAt().toString();
                         
                         if ( trendsList.containsKey(token) )
                         {
@@ -174,16 +184,19 @@ public class CreateTopics extends CascalogFunction {
                             tuple.set( 2, trendsList.get(token) );
                             tuple.set( 3, tweetDate );
                             
-                            call.getOutputCollector().add( tuple );    
+                            call.getOutputCollector().add( tuple ); 
                         }
-                        else if ( !trendsNotFulfilRequirements.contains(token) )
+                        else if ( rand.nextInt( RAND_LIMIT ) == RAND_PASS )
                         {
-                            tuple.set( 0, token );
-                            tuple.set( 1, false );
-                            tuple.set( 2, null );
-                            tuple.set( 3, tweetDate );
-                            
-                            call.getOutputCollector().add( tuple );
+                            if( !trendsNotFulfilRequirements.contains(token) )
+                            {
+                                tuple.set( 0, token );
+                                tuple.set( 1, false );
+                                tuple.set( 2, null );
+                                tuple.set( 3, tweetDate );
+                                                       
+                                call.getOutputCollector().add( tuple );
+                            }
                         }
                     }
                 }

@@ -46,8 +46,8 @@ public class App extends Configured implements Tool {
                         .getQuery() );
         
 //        Api.execute( new Hfs(  new TextDelimited(), args[4] ), 
-//                new Queries( args[0], "?cleanTokens, ?isTrend,"
-//                        + " !timeTrended, ?tweetTime" )
+//                new Queries( args[0], "?cleanTokens, ?trend,"
+//                        + " !timeTrended, ?timeBuckets" )
 //                        .getQuery() );
         
         return 0;
@@ -65,9 +65,8 @@ public class App extends Configured implements Tool {
         conf.set( "mapred.cache.files", files ); // stopwords
         conf.set( "mapred.reduce.tasks", "28" );
         conf.set("mapred.compress.map.output", "true");
-        conf.set("mapred.output.compression.type", "BLOCK"); 
         conf.set("mapred.map.output.compression.codec", 
-                "org.apache.hadoop.io.compress.GzipCodec");
+                "org.apache.hadoop.io.compress.BZip2Codec");
         conf.set( "mapred.child.java.opts", "-Xmx1g" );
         
         try {

@@ -29,6 +29,7 @@ public class Queries
     {
         switch( subquery )
         {
+            // all cases
             case "?cleanTokens, ?isTrend, !timeTrended, ?timeBuckets":
                 return new Subquery( subquery.split( ", ") )
                 .predicate( splitTweetTap( args ), "_", "?tweets" )
@@ -37,13 +38,23 @@ public class Queries
                         , "?tweetTime" )
                 .predicate( new CreateBucketsBuf(), "?tweetTime" )
                         .out( "?timeBuckets" );
-               
-            case "?cleanTokens, ?isTrend, !timeTrended, ?tweetTime":
-                return new Subquery( subquery.split( ", ") )
-                .predicate( splitTweetTap( args ), "_", "?tweets" )
-                .predicate( new CreateTopics(), "?tweets" )
-                .out( "?cleanTokens", "?isTrend", "!timeTrended"
-                        , "?tweetTime" );
+            
+            // trends only
+//            case "?cleanTokens, ?trend, !timeTrended, ?timeBuckets":
+//                return new Subquery( subquery.split( ", ") )
+//                .predicate( splitTweetTap( args ), "_", "?tweets" )
+//                .predicate( new CreateTopics(), "?tweets", "notNull" )
+//                .out( "?cleanTokens", "?trend", "!timeTrended"
+//                        , "?tweetTime" )
+//                .predicate( new CreateBucketsBuf(), "?tweetTime" )
+//                        .out( "?timeBuckets" );
+                
+//            case "?cleanTokens, ?isTrend, !timeTrended, ?tweetTime":
+//                return new Subquery( subquery.split( ", ") )
+//                .predicate( splitTweetTap( args ), "_", "?tweets" )
+//                .predicate( new CreateTopics(), "?tweets" )
+//                .out( "?cleanTokens", "?isTrend", "!timeTrended"
+//                        , "?tweetTime" );
                 
             default:
                 System.err.println( "Not valid subquery" );
